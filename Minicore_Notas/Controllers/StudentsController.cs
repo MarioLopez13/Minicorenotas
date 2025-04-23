@@ -19,7 +19,6 @@ namespace Minicore_Notas.Controllers
             _context = context;
         }
 
-        
 
         // GET: Students/Edit/5
         public async Task<IActionResult> Edit(int? id)

@@ -49,7 +49,7 @@ namespace Minicore_Notas.Controllers
                 return NotFound();
             }
 
-            
+
             try
             {
                 _context.Update(grade);

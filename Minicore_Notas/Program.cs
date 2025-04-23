@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Minicore_Notas.Data;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 
 namespace Minicore_Notas
 {

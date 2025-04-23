@@ -1,11 +1,15 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
 using Minicore_Notas.Data;
 using Minicore_Notas.Models;
 using Minicore_Notas.Models.ViewModel;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Minicore_Notas.Controllers
 {
@@ -14,10 +18,8 @@ namespace Minicore_Notas.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly ApplicationDbContext _context;
-        private DateOnly Start { get; set; } = new DateOnly(2023, 9, 27);
-        private DateOnly End { get; set; } = new DateOnly(2024, 1, 30);
 
-        public HomeController(ApplicationDbContext context,ILogger<HomeController> logger)
+        public HomeController(ApplicationDbContext context, ILogger<HomeController> logger)
         {
             _logger = logger;
             _context = context;
@@ -25,11 +27,11 @@ namespace Minicore_Notas.Controllers
 
         public IActionResult Index()
         {
-            
+
             //Para crear Grades
             ViewData["StudentId"] = new SelectList(_context.Students, "Id", "Name");
             /*retrieve*/
-            GradeVM gradeVm= new()
+            GradeVM gradeVm = new()
             {
                 Grade = new Grade(),
                 Student = new Student(),
@@ -40,7 +42,6 @@ namespace Minicore_Notas.Controllers
 
             };
 
-            
 
             return View(gradeVm);
         }
@@ -52,7 +53,7 @@ namespace Minicore_Notas.Controllers
 
             _context.Add(student);
             await _context.SaveChangesAsync();
-            return Redirect("."); 
+            return Redirect(".");
         }
 
         [HttpPost]
@@ -65,7 +66,7 @@ namespace Minicore_Notas.Controllers
                 await _context.SaveChangesAsync();
                 return Redirect(".");
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 ViewData["StudentId"] = new SelectList(_context.Students, "Id", "Name", grade.StudentId);
                 return Redirect(".");
@@ -80,7 +81,7 @@ namespace Minicore_Notas.Controllers
             {
                 _context.Add(period);
                 await _context.SaveChangesAsync();
-                
+
             }
             catch (Exception e)
             {
@@ -93,7 +94,7 @@ namespace Minicore_Notas.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DefineRange([Bind("Start", "End")] GradeVM gradeVM )
+        public async Task<IActionResult> DefineRange([Bind("Start", "End")] GradeVM gradeVM)
         {
 
             ViewData["StudentId"] = new SelectList(_context.Students, "Id", "Name");
@@ -121,13 +122,13 @@ namespace Minicore_Notas.Controllers
                 promedios[3] = promedios[0] + promedios[1] + promedios[2];
                 gradeVm.Promedios.Add(student.Id, promedios);
 
-                promedios[4] = (6 - (promedios[0] + promedios[1]))/0.4;
+                promedios[4] = (6 - (promedios[0] + promedios[1])) / 0.4;
 
-            }   
+            }
 
             return View("Index", gradeVm);
         }
-        
+
 
         public IActionResult Privacy()
         {
@@ -140,18 +141,18 @@ namespace Minicore_Notas.Controllers
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
-        // METHOD FOR GETTING ALL GRADES WITH STUDENT ID WHERE DATE IS BETWEEN START AND END AND DATE IS BETWEEN START AND END OF PERIOD 
-        public double GetGradesByStudent(int studentId, DateOnly start, DateOnly end, int periodId)
+        // METHOD FOR GETTING ALL GRADES WITH STUDENT ID WHERE DATE IS BETWEEN START AND END AND DATE IS BETWEEN START AND END OF PERIOD
+        public double GetGradesByStudent(int studentId, DateTime start, DateTime end, int periodId)
         {
             var period = _context.Periods.Find(periodId);
-            var lista =  _context.Grades.Where(g => g.StudentId == studentId && g.Date >= start && g.Date <= end && g.Date >= period.Start && g.Date <= period.End).ToList();
+            var lista = _context.Grades.Where(g => g.StudentId == studentId && g.Date >= start && g.Date <= end && g.Date >= period.Start && g.Date <= period.End).ToList();
             if (lista.Count == 0)
             {
                 return 0;
             }
 
             //return the average of the list multiplied by the weigh of the period
-            return lista.Average(g => g.GradeValue) * period.Weigh/100;
+            return lista.Average(g => g.GradeValue) * period.Weigh / 100;
 
             //return lista.Average(g => g.GradeValue);
         }
